@@ -1,9 +1,9 @@
-title,company,location,salary_min,salary_max
-Medical Claims Support I,Moda Health,"Portland, ",0,0
-Data Analyst,ActivTrak,"Austin, Austin, Texas, United States",0,0
-Healthcare Admin Assistant AI Projects,CuraSenseAI,"United States, ",0,0
-Architect Retail Junior,LUV,"Barcelona, ",0,0
-Rural and Suburban Mail Carrier,Canada Post / Postes Canada,"Saint Vincent's-Saint Stephen's-Peter's River, ",0,0
-Data Scientist,Why Hiring,"Canada, ",0,0
-Backend Developer,360Dialog,"Serbia, ",0,0
-Virtual Data Entry,Sundayy,,0,0
+title,company,location,fit_score
+Medical Claims Support I,Moda Health,"Portland, ",5
+Data Analyst,ActivTrak,"Austin, Austin, Texas, United States",2
+Healthcare Admin Assistant AI Projects,CuraSenseAI,"United States, ",5
+Architect Retail Junior,LUV,"Barcelona, ",5
+Rural and Suburban Mail Carrier,Canada Post / Postes Canada,"Saint Vincent's-Saint Stephen's-Peter's River, ",5
+Data Scientist,Why Hiring,"Canada, ",2
+Backend Developer,360Dialog,"Serbia, ",2
+Virtual Data Entry,Sundayy,,2

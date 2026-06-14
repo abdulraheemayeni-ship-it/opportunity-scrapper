@@ -177,6 +177,25 @@ headers = {
 response = requests.get(url, headers=headers)
 data = response.json()
 
+def score_job(title):
+    score = 0
+
+    keywords = {
+        "python": 3,
+        "ai": 5,
+        "machine learning": 5,
+        "backend": 2,
+        "data": 2
+    }
+
+    title = title.lower()
+
+    for keyword, points in keywords.items():
+        if keyword in title:
+            score += points
+
+    return score
+
 keywords = [
     "python",
     "ai",
@@ -196,16 +215,29 @@ for job in data:
 
     if any(keyword.lower() in title.lower() for keyword in keywords):
 
+        # jobs.append({
+        #     "title": title,
+        #     "company": job.get("company"),
+        #     "location": job.get("location"),
+        #     "salary_min": job.get("salary_min"),
+        #     "salary_max": job.get("salary_max")
+        # })
         jobs.append({
-            "title": title,
-            "company": job.get("company"),
-            "location": job.get("location"),
-            "salary_min": job.get("salary_min"),
-            "salary_max": job.get("salary_max")
-        })
+    "title": title,
+    "company": job.get("company"),
+    "location": job.get("location"),
+    "fit_score": score_job(title)
+})
 
 df = pd.DataFrame(jobs)
 
 df.to_csv("filtered_jobs.csv", index=False)
 
 print(f"Found {len(jobs)} matching jobs")
+
+df.to_csv("filtered_jobs.csv", index=False)
+
+print("\nMatching Jobs:\n")
+
+for job in jobs:
+    print(f"{job['title']} | {job['company']}")
