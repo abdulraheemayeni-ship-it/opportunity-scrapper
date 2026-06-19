@@ -169,6 +169,12 @@ import requests
 import pandas as pd
 import re
 
+try:
+    with open("seen_jobs.txt", "r") as file:
+        seen_jobs = set(file.read().splitlines())
+except FileNotFoundError:
+    seen_jobs = set()
+
 url = "https://remoteok.com/api"
 
 headers = {
@@ -246,6 +252,8 @@ for job in data:
 
     title = str(job.get("position", ""))
 
+    job_id = str(job.get("id"))
+
     # if any(keyword.lower() in title.lower() for keyword in keywords):
 
     title_lower = title.lower()
@@ -307,3 +315,7 @@ for i, (_, row) in enumerate(top_jobs.iterrows(), start=1):
         f"{row['company']} | "
         f"Score: {row['fit_score']}"
     )
+
+
+data = response.json()
+print(data[1])
