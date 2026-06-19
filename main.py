@@ -165,71 +165,218 @@
 
 # print(f"Extracted {len(jobs)} jobs → jobs.csv")
 
+# import requests
+# import pandas as pd
+# import re
+
+# try:
+#     with open("seen_jobs.txt", "r") as file:
+#         seen_jobs = set(file.read().splitlines())
+# except FileNotFoundError:
+#     seen_jobs = set()
+
+# url = "https://remoteok.com/api"
+
+# headers = {
+#     "User-Agent": "Mozilla/5.0"
+# }
+
+# response = requests.get(url, headers=headers)
+# data = response.json()
+
+
+
+# def score_job(title):
+#     score = 0
+
+#     keywords = {
+#         "python": 5,
+#         "ai": 8,
+#         "machine learning": 8,
+#         "data scientist": 6,
+#         "data analyst": 4,
+#         "backend": 4,
+#         "software engineer": 5,
+#         "developer": 4,
+#         "automation": 5,
+#         "data": 1
+#     }
+
+#     title = title.lower()
+
+#     for keyword, points in keywords.items():
+
+#         pattern = r"\b" + re.escape(keyword) + r"\b"
+
+#         if re.search(pattern, title):
+#             score += points
+
+#     return score
+
+# keywords = [
+#     "python",
+#     "ai",
+#     "machine learning",
+#     "data",
+#     "backend",
+#     "developer",
+#     "engineer",
+#     "software",
+#     "automation"
+# ]
+
+
+# jobs = []
+
+# for job in data:
+
+#     if "position" not in job:
+#         continue
+
+#     title = str(job.get("position", ""))
+
+#     job_id = str(job.get("id"))
+
+#     # if any(keyword.lower() in title.lower() for keyword in keywords):
+
+#     title_lower = title.lower()
+
+#     matched = False
+
+#     for keyword in keywords:
+#         pattern = r"\b" + re.escape(keyword.lower()) + r"\b"
+
+#         if re.search(pattern, title_lower):
+#             matched = True
+#             break
+
+#     # print("Checking:", title)
+
+#     if matched:
+    
+
+#         if job_id in seen_jobs:
+#             continue
+
+
+#         seen_jobs.add(job_id)
+
+
+        
+#         jobs.append({
+#             "title": title,
+#             "company": job.get("company"),
+#             "location": job.get("location"),
+#             "fit_score": score_job(title)
+#         })
+
+
+
+# df = pd.DataFrame(jobs)
+
+
+
+# print(f"Found {len(jobs)} matching jobs")
+
+
+# print("\nMatching Jobs:\n")
+
+# for job in jobs:
+#     print(f"{job['title']} | {job['company']}")
+
+
+
+
+# df = df.sort_values(
+#     by="fit_score",
+#     ascending=False
+# )
+
+# print("\nTOP OPPORTUNITIES TODAY\n")
+
+# top_jobs = df.head(5)
+
+# for i, (_, row) in enumerate(top_jobs.iterrows(), start=1):
+#     print(
+#         f"{i}. {row['title']} | "
+#         f"{row['company']} | "
+#         f"Score: {row['fit_score']}"
+#     )
+
+# df.to_csv("filtered_jobs.csv", index=False)
+
+
+# # data = response.json()
+# # print(data[1])
+
+
+
+# with open("seen_jobs.txt", "w") as file:
+#     for job_id in seen_jobs:
+#         file.write(job_id + "\n")
+
+
+
+
+
 import requests
 import pandas as pd
-import re
 
+# ----------------------------
+# LOAD MEMORY
+# ----------------------------
 try:
     with open("seen_jobs.txt", "r") as file:
         seen_jobs = set(file.read().splitlines())
 except FileNotFoundError:
     seen_jobs = set()
 
+# ----------------------------
+# FETCH DATA
+# ----------------------------
 url = "https://remoteok.com/api"
-
-headers = {
-    "User-Agent": "Mozilla/5.0"
-}
+headers = {"User-Agent": "Mozilla/5.0"}
 
 response = requests.get(url, headers=headers)
 data = response.json()
 
-# def score_job(title):
-#     score = 0
-
-#     keywords = {
-#         "python": 3,
-#         "ai": 5,
-#         "machine learning": 5,
-#         "backend": 2,
-#         "data": 2
-#     }
-
-#     title = title.lower()
-
-#     for keyword, points in keywords.items():
-#         if keyword in title:
-#             score += points
-
-#     return score
-
+# ----------------------------
+# SCORING SYSTEM
+# ----------------------------
 def score_job(title):
-    score = 0
+    title_lower = title.lower()
 
-    keywords = {
-        "python": 5,
-        "ai": 8,
-        "machine learning": 8,
-        "data scientist": 6,
-        "data analyst": 4,
-        "backend": 4,
-        "software engineer": 5,
-        "developer": 4,
-        "automation": 5,
-        "data": 1
+    tech_roles = {
+        "data scientist": 10,
+        "machine learning engineer": 10,
+        "software engineer": 8,
+        "backend developer": 7,
+        "python developer": 7,
+        "data analyst": 6,
+        "frontend developer": 7,
+        "full stack developer": 8
     }
 
-    title = title.lower()
+    score = 0
 
-    for keyword, points in keywords.items():
-
-        pattern = r"\b" + re.escape(keyword) + r"\b"
-
-        if re.search(pattern, title):
+    for role, points in tech_roles.items():
+        if role in title_lower:
             score += points
 
     return score
 
+    title_lower = title.lower()
+    score = 0
+
+    for keyword, points in keywords.items():
+        if keyword in title_lower:
+            score += points
+
+    return score
+
+# ----------------------------
+# FILTERING
+# ----------------------------
 keywords = [
     "python",
     "ai",
@@ -242,7 +389,6 @@ keywords = [
     "automation"
 ]
 
-
 jobs = []
 
 for job in data:
@@ -251,59 +397,48 @@ for job in data:
         continue
 
     title = str(job.get("position", ""))
-
-    job_id = str(job.get("id"))
-
-    # if any(keyword.lower() in title.lower() for keyword in keywords):
+    job_id = str(job.get("id", ""))
 
     title_lower = title.lower()
 
-    matched = False
+    matched = score_job(title) > 0
 
-    for keyword in keywords:
-        pattern = r"\b" + re.escape(keyword.lower()) + r"\b"
+    if not matched:
+        continue
 
-        if re.search(pattern, title_lower):
-            matched = True
-            break
+    if job_id in seen_jobs:
+        continue
 
-    # print("Checking:", title)
+    seen_jobs.add(job_id)
 
-    if matched:
+    jobs.append({
+        "title": title,
+        "company": job.get("company"),
+        "location": job.get("location"),
+        "fit_score": score_job(title)
+    })
 
-        # jobs.append({
-        #     "title": title,
-        #     "company": job.get("company"),
-        #     "location": job.get("location"),
-        #     "salary_min": job.get("salary_min"),
-        #     "salary_max": job.get("salary_max")
-        # })
-        jobs.append({
-            "title": title,
-            "company": job.get("company"),
-            "location": job.get("location"),
-            "fit_score": score_job(title)
-        })
+# ----------------------------
+# HANDLE EMPTY RESULTS SAFELY
+# ----------------------------
+if len(jobs) == 0:
+    print("No new matching jobs found.")
+    exit()
 
+# ----------------------------
+# DATAFRAME + SORT
+# ----------------------------
 df = pd.DataFrame(jobs)
+df = df.sort_values(by="fit_score", ascending=False)
 
-df.to_csv("filtered_jobs.csv", index=False)
+# ----------------------------
+# OUTPUT
+# ----------------------------
+print(f"\nFound {len(jobs)} matching jobs\n")
 
-print(f"Found {len(jobs)} matching jobs")
-
-
-print("\nMatching Jobs:\n")
-
+print("Matching Jobs:\n")
 for job in jobs:
     print(f"{job['title']} | {job['company']}")
-
-
-df = pd.DataFrame(jobs)
-
-df = df.sort_values(
-    by="fit_score",
-    ascending=False
-)
 
 print("\nTOP OPPORTUNITIES TODAY\n")
 
@@ -316,6 +451,14 @@ for i, (_, row) in enumerate(top_jobs.iterrows(), start=1):
         f"Score: {row['fit_score']}"
     )
 
+# ----------------------------
+# SAVE CSV
+# ----------------------------
+df.to_csv("filtered_jobs.csv", index=False)
 
-data = response.json()
-print(data[1])
+# ----------------------------
+# SAVE MEMORY
+# ----------------------------
+with open("seen_jobs.txt", "w") as file:
+    for job_id in seen_jobs:
+        file.write(job_id + "\n")
