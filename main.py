@@ -1,5 +1,8 @@
-import requests
 import pandas as pd
+
+from fetcher import fetch_jobs
+from scorer import score_job
+from filters import is_allowed_job
 
 # ----------------------------
 # LOAD MEMORY
@@ -10,70 +13,20 @@ try:
 except FileNotFoundError:
     seen_jobs = set()
 
+
 # ----------------------------
 # FETCH DATA
 # ----------------------------
-url = "https://remoteok.com/api"
-headers = {"User-Agent": "Mozilla/5.0"}
+data = fetch_jobs()
 
-try:
-    response = requests.get(
-        url,
-        headers=headers,
-        timeout=15
-    )
-
-    response.raise_for_status()
-    data = response.json()
-
-except Exception as e:
-    print(f"Connection error: {e}")
+if data is None:
     exit()
-
-# ----------------------------
-# SCORING SYSTEM
-# ----------------------------
-def score_job(title):
-    title_lower = title.lower()
-
-    tech_roles = {
-        "data scientist": 10,
-        "machine learning engineer": 10,
-        "software engineer": 8,
-        "backend developer": 7,
-        "python developer": 7,
-        "data analyst": 6,
-        "frontend developer": 7,
-        "full stack developer": 8,
-        "ai engineer": 10,
-        "automation engineer": 8,
-        "ml engineer": 10
-    }
-
-    score = 0
-
-    for role, points in tech_roles.items():
-        if role in title_lower:
-            score += points
-
-    return score
-
 
 
 # ----------------------------
 # FILTERING
 # ----------------------------
-keywords = [
-    "python",
-    "ai",
-    "machine learning",
-    "data",
-    "backend",
-    "developer",
-    "engineer",
-    "software",
-    "automation"
-]
+
 
 jobs = []
 
@@ -82,12 +35,12 @@ for job in data:
     if "position" not in job:
         continue
 
+    
+
     title = str(job.get("position", ""))
     job_id = str(job.get("id", ""))
 
-    title_lower = title.lower()
-
-    matched = score_job(title) > 0
+    matched = is_allowed_job(title)
 
     if not matched:
         continue
@@ -97,17 +50,22 @@ for job in data:
 
     seen_jobs.add(job_id)
 
-    jobs.append({
-        "title": title,
-        "company": job.get("company"),
-        "location": job.get("location"),
-        "fit_score": score_job(title)
-    })
+    jobs.append(
+        {
+            "title": title,
+            "company": job.get("company"),
+            "location": job.get("location"),
+            "fit_score": score_job(
+                title,
+                job.get("description", "")
+            ),
+        }
+    )
 
 # ----------------------------
 # HANDLE EMPTY RESULTS SAFELY
 # ----------------------------
-if len(jobs) == 0:
+if not jobs:
     print("No new matching jobs found.")
     exit()
 
