@@ -1,8 +1,45 @@
+import argparse
 import pandas as pd
 
+from database import (
+    create_database,
+    job_exists,
+    save_job
+)
 from fetcher import fetch_jobs
 from scorer import score_job
 from filters import is_allowed_job
+
+
+# ----------------------------
+# COMMAND LINE ARGUMENTS
+# ----------------------------
+parser = argparse.ArgumentParser(
+    description="Opportunity Scraper Pro"
+)
+
+parser.add_argument(
+    "--top",
+    type=int,
+    default=5,
+    help="Number of top jobs to display"
+)
+
+parser.add_argument(
+    "--save",
+    action="store_true",
+    help="Save results to CSV"
+)
+
+parser.add_argument(
+    "--all",
+    action="store_true",
+    help="Show all matching jobs"
+)
+
+args = parser.parse_args()
+
+create_database()
 
 # ----------------------------
 # LOAD MEMORY
@@ -45,20 +82,29 @@ for job in data:
     if not matched:
         continue
 
-    if job_id in seen_jobs:
+    if job_exists(job_id) and not args.all:
         continue
 
-    seen_jobs.add(job_id)
+
+    score = score_job(
+        title,
+        job.get("description", "")
+    )
+
+    save_job(
+        job_id,
+        title,
+        job.get("company"),
+        job.get("location"),
+        score
+    )
 
     jobs.append(
         {
             "title": title,
             "company": job.get("company"),
             "location": job.get("location"),
-            "fit_score": score_job(
-                title,
-                job.get("description", "")
-            ),
+            "fit_score": score,
         }
     )
 
@@ -86,7 +132,7 @@ for job in jobs:
 
 print("\nTOP OPPORTUNITIES TODAY\n")
 
-top_jobs = df.head(5)
+top_jobs = df.head(args.top)
 
 for i, (_, row) in enumerate(top_jobs.iterrows(), start=1):
     print(
@@ -98,7 +144,9 @@ for i, (_, row) in enumerate(top_jobs.iterrows(), start=1):
 # ----------------------------
 # SAVE CSV
 # ----------------------------
-df.to_csv("filtered_jobs.csv", index=False)
+if args.save:
+    df.to_csv("filtered_jobs.csv", index=False)
+    print("\nResults saved to filtered_jobs.csv")
 
 # ----------------------------
 # SAVE MEMORY

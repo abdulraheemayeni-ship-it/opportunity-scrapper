@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 filtered_jobs.csv
 seen_jobs.txt
+jobs.db
